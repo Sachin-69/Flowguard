@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FlowGuard | API Reliability Layer</title>
+<!--
+  HERO BACKGROUND VIDEO
+  Save your file as: public/hero-bg.mp4  (h264 + aac, 1080p, under ~8MB ideal)
+  Optional: public/hero-bg.webm (used first when present) and
+  public/hero-bg.jpg (poster frame shown while the video loads).
+  No restart needed after adding the files, just refresh the page.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#0a0c11; --bg2:#0e1219; --card:#121724; --card2:#161c2b;
+    --line:#232c42; --txt:#f2ecdf; --mut:#9aa3b5;
+    --gold:#e3b869; --gold2:#f4d79a;
+    --ok:#35c47c; --warn:#f5a524; --bad:#f0507a; --blue:#6f9bff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.55 "Inter",system-ui,Segoe UI,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;padding:12px 28px;background:rgba(10,12,17,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .brand{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:.14em}
+  .brand em{font-family:"Instrument Serif",serif;font-style:italic;letter-spacing:0;color:var(--gold)}
+  .topbar .tag{color:var(--mut);font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+  .spacer{flex:1}
+  .pill{padding:4px 12px;border-radius:999px;font-size:12px;border:1px solid var(--line);color:var(--mut);background:#0d1220;white-space:nowrap}
+  .pill b{color:var(--txt);font-weight:600}
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);background:var(--bg2);}
+  .hero video.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+  .hero .shade{position:absolute;inset:0;
+    background:
+      linear-gradient(100deg, rgba(10,12,17,.96) 22%, rgba(10,12,17,.78) 48%, rgba(10,12,17,.35) 75%, rgba(10,12,17,.55) 100%),
+      linear-gradient(0deg, var(--bg) 0%, rgba(10,12,17,0) 30%);}
+  .hero-inner{position:relative;max-width:1200px;margin:0 auto;padding:88px 28px 72px}
+  .eyebrow{display:flex;align-items:center;gap:10px;color:var(--gold);font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase}
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--gold)}
+  .hero h1{font-family:"Bebas Neue",sans-serif;font-size:clamp(56px,9vw,124px);line-height:.94;letter-spacing:.01em;margin:16px 0 6px;font-weight:400}
+  .hero h1 .serif{font-family:"Instrument Serif",serif;font-style:italic;font-weight:400;color:var(--gold2);letter-spacing:0}
+  .hero p.lede{max-width:560px;color:#c9cfdb;font-size:16px;margin:10px 0 0}
+  .hero p.lede strong{color:var(--txt)}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+  .hero-meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:30px;color:var(--mut);font-size:12.5px}
+  .hero-meta b{display:block;color:var(--txt);font-size:13px}
+  /* ---------- buttons/inputs ---------- */
+  button,select,input{background:#0d1322;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:13px;font-family:inherit}
+  button{cursor:pointer;transition:border-color .15s,transform .05s} button:hover{border-color:var(--gold)} button:active{transform:translateY(1px)}
+  button.primary{background:var(--gold);border-color:var(--gold);color:#14100a;font-weight:700}
+  button.primary:hover{background:var(--gold2)}
+  button.ghost{background:transparent}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+  .mode-btn.active{background:var(--gold);color:#14100a;border-color:var(--gold);font-weight:600}
+  /* ---------- layout ---------- */
+  .wrap{padding:26px 28px 60px;max-width:1200px;margin:0 auto}
+  .section-label{color:var(--mut);font-size:12px;letter-spacing:.22em;text-transform:uppercase;margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+  .section-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:0}
+  .card{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+  .card::top,.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55}
+  .card .k{color:var(--mut);font-size:11.5px;text-transform:uppercase;letter-spacing:.12em}
+  .card .v{font-size:30px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+  .card .s{color:var(--mut);font-size:12px;margin-top:2px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media(max-width:900px){.row{grid-template-columns:1fr}}
+  .panel{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);border-radius:14px;padding:18px;margin:12px 0}
+  .panel h3{margin:0 0 4px;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt)}
+  .panel .desc{color:var(--mut);font-size:13px;margin:0 0 12px}
+  canvas{width:100%;height:180px;background:#0b101c;border:1px solid var(--line);border-radius:10px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  th{color:var(--mut);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em}
+  .ok{color:var(--ok)} .bad{color:#ff8ba6} .warn{color:var(--warn)}
+  code{background:#0b101c;padding:2px 7px;border-radius:6px;border:1px solid var(--line);font-size:12px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  #log{max-height:280px;overflow:auto}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--mut);font-size:12px;margin-top:8px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+  footer{border-top:1px solid var(--line);padding:20px 28px;color:var(--mut);font-size:12.5px;display:flex;gap:16px;flex-wrap:wrap;max-width:1200px;margin:0 auto}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">FLOW<em>Guard</em></div>
+  <span class="tag">API Reliability Layer</span>
+  <span class="spacer"></span>
+  <span class="pill" id="healthPill">health: ...</span>
+  <span class="pill" id="simPill">simulator: ...</span>
+</div>
+
+<section class="hero">
+  <video class="bg" autoplay muted loop playsinline preload="auto" poster="hero-bg.jpg">
+    <source src="hero-bg.webm" type="video/webm"/>
+    <source src="hero-bg.mp4" type="video/mp4"/>
+  </video>
+  <div class="shade"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Day 2 / Gateway Middleware</div>
+    <h1>Every outage,<br/><span class="serif">rehearsed.</span></h1>
+    <p class="lede">FlowGuard stands between your app and the outside world. Rate limiting, caching, retries with backoff, circuit breaking and timeouts, all verified against a <strong>built in failure simulator</strong> before real traffic ever hits.</p>
+    <div class="cta-row">
+      <button class="primary" onclick="runDemo()">Run the Day 2 demo</button>
+      <button class="ghost" onclick="sendN(1)">Send 1 request</button>
+      <button class="ghost" onclick="document.getElementById('sim').scrollIntoView({behavior:'smooth'})">Open simulator</button>
+    </div>
+    <div class="hero-meta">
+      <div><b>100 req/min</b>per route limit</div>
+      <div><b>3 attempts</b>200ms, 500ms backoff</div>
+      <div><b>5 failures</b>opens the circuit</div>
+      <div><b>6 modes</b>failure simulator</div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="section-label">Live metrics</div>
+  <div class="grid">
+    <div class="card"><div class="k">Requests</div><div class="v" id="mRequests">0</div><div class="s">total proxied</div></div>
+    <div class="card"><div class="k">Success rate</div><div class="v" id="mSuccess">100%</div><div class="s">2xx share</div></div>
+    <div class="card"><div class="k">P95 latency</div><div class="v" id="mP95">0ms</div><div class="s" id="mAvg">avg 0ms</div></div>
+    <div class="card"><div class="k">Cache hit rate</div><div class="v" id="mCache">0%</div><div class="s" id="mCacheSub">0 hits</div></div>
+    <div class="card"><div class="k">Retries</div><div class="v" id="mRetries">0</div><div class="s">extra attempts</div></div>
+    <div class="card"><div class="k">Circuit breaks</div><div class="v" id="mBreaks">0</div><div class="s">opens to date</div></div>
+  </div>
+
+  <div class="panel" id="sim">
+    <h3>Failure simulator</h3>
+    <p class="desc" id="demoHint">Pick downstream behavior, then send traffic through <code>GET /proxy/weather</code>. Suggested run: set 500 errors, send 20 requests, watch retries trip the circuit open. Then set Normal, wait 10s, send one request to close it.</p>
+    <div class="btnrow" id="modes"></div>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="primary" onclick="runDemo()">Send 20 (Day 2 demo)</button>
+      <button onclick="sendN(1)">Send 1</button>
+      <button onclick="sendN(100)">Burst 100 (rate limit)</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
+    <p class="desc" id="demoOut" style="margin:10px 0 0"></p>
+  </div>
+
+  <div class="row">
+    <div class="panel"><h3>Request volume</h3><p class="desc">Requests per second, last 30s.</p><canvas id="cVol" width="520" height="180"></canvas></div>
+    <div class="panel"><h3>Errors, cache hits, retries</h3><p class="desc">Per second breakdown.</p><canvas id="cErr" width="520" height="180"></canvas>
+      <div class="legend"><span><i class="dot" style="background:#f0507a"></i>errors</span><span><i class="dot" style="background:#35c47c"></i>cache hits</span><span><i class="dot" style="background:#f5a524"></i>retries</span></div>
+    </div>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h3>Routes</h3><p class="desc">api_routes table.</p>
+      <table><thead><tr><th>id</th><th>path</th><th>ttl</th><th>limit/min</th></tr></thead><tbody id="routeRows"></tbody></table>
+      <div class="btnrow" style="margin-top:10px">
+        <input id="newId" placeholder="route id, e.g. maps" style="width:170px"/>
+        <input id="newPath" placeholder="path, e.g. /maps/delhi" style="width:210px"/>
+        <button onclick="createRoute()">Add route</button>
+      </div>
+      <h3 style="margin-top:18px">Circuit states</h3><p class="desc">circuit_states table.</p>
+      <div id="circuits" class="desc">all CLOSED</div>
+    </div>
+    <div class="panel">
+      <h3>Recent requests</h3><p class="desc">request_logs table, newest first.</p>
+      <div id="log"><table><thead><tr><th>route</th><th>status</th><th>lat</th><th>att</th><th>outcome</th></tr></thead><tbody id="logRows"></tbody></table></div>
+      <h3 style="margin-top:18px">API reference</h3>
+      <p class="desc"><code>POST /routes</code> <code>GET /routes</code> <code>GET/POST /proxy/:route</code> <code>GET /metrics</code> <code>GET /health</code> <code>POST /simulator/config</code></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>FlowGuard / Day 2 build</span><span>Rate limit 100/min</span><span>Retry 200ms, 500ms</span><span>Circuit 5 fails, 10s open</span><span>Timeout 2000ms</span>
+</footer>
+
+<script>
+/* Point the UI at a remote backend when frontend and backend deploy separately.
+   Same origin default works for local run and single service deploys. */
+const API_BASE = "";
+const api = (p) => (API_BASE ? API_BASE.replace(/\/$/, "") + p : p);
+const MODES = ["NORMAL","SLOW","ERROR_500","ERROR_429","TIMEOUT","RANDOM"];
+const modeLabels = {NORMAL:"Normal",SLOW:"Slow",ERROR_500:"500 errors",ERROR_429:"429 errors",TIMEOUT:"Timeout",RANDOM:"Random"};
+let cur = "NORMAL";
+
+function drawBars(id, seriesList, colors){
+  const c = document.getElementById(id), ctx = c.getContext("2d");
+  const W=c.width,H=c.height; ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle = "rgba(255,255,255,.07)";
+  for(let g=1; g<4; g++){ ctx.beginPath(); ctx.moveTo(0,H*g/4); ctx.lineTo(W,H*g/4); ctx.stroke(); }
+  const max = Math.max(1,...seriesList.flat());
+  const n = seriesList[0].length, bw = W/n;
+  seriesList.forEach((s,si)=>{
+    ctx.fillStyle = colors[si];
+    s.forEach((v,i)=>{
+      const h = (v/max)*(H-24);
+      if(h<=0) return;
+      const x = i*bw + 2 + si*((bw-4)/seriesList.length);
+      ctx.fillRect(x, H-h, Math.max(1,(bw-4)/seriesList.length-1.5), h);
+    });
+  });
+}
+
+async function refresh(){
+  try{
+    const r = await fetch(api("/metrics")); const m = await r.json();
+    document.getElementById("mRequests").textContent = m.requests.toLocaleString();
+    document.getElementById("mSuccess").textContent = m.successRate + "%";
+    document.getElementById("mP95").textContent = m.p95LatencyMs + "ms";
+    document.getElementById("mAvg").textContent = "avg " + m.avgLatencyMs + "ms";
+    document.getElementById("mCache").textContent = m.cacheHitRate + "%";
+    document.getElementById("mCacheSub").textContent = m.cacheHits + " hits";
+    document.getElementById("mRetries").textContent = m.retries;
+    document.getElementById("mBreaks").textContent = m.circuitBreaks;
+    document.getElementById("simPill").innerHTML = "simulator: <b>" + m.simulator + "</b>";
+    cur = m.simulator; paintModes();
+    drawBars("cVol",[m.charts.volume],["#e8e2d2"]);
+    drawBars("cErr",[m.charts.errors,m.charts.cacheHits,m.charts.retries],["#f0507a","#35c47c","#f5a524"]);
+    document.getElementById("logRows").innerHTML = (m.recentLogs||[]).map(l=>
+      `<tr><td>${l.route}</td><td class="${l.status<300?'ok':l.status===429?'warn':'bad'}">${l.status}</td><td>${l.latencyMs}ms</td><td>${l.attempts}</td><td>${l.outcome}${l.cacheHit?' / HIT':''}</td></tr>`).join("") || "<tr><td colspan=5>No traffic yet. Send a request.</td></tr>";
+    document.getElementById("circuits").innerHTML = (m.circuits||[]).map(c=>
+      `<span class="pill">${c.routeId}: <b>${c.state}</b> (fail=${c.consecutiveFailures})</span>`).join(" ") || "all CLOSED";
+    const hr = await fetch(api("/health")); const h = await hr.json();
+    document.getElementById("healthPill").innerHTML = "health: <b>" + h.status + "</b> / routes=" + h.routes;
+  }catch(e){}
+  try{
+    const r = await fetch(api("/routes")); const j = await r.json();
+    document.getElementById("routeRows").innerHTML = (j.routes||[]).map(x=>
+      `<tr><td><code>${x.id}</code></td><td>${x.path}</td><td>${x.cacheTtlSec}s</td><td>${x.rateLimitPerMin}</td></tr>`).join("");
+  }catch(e){}
+}
+
+function paintModes(){
+  document.getElementById("modes").innerHTML = MODES.map(m=>
+    `<button class="mode-btn ${m===cur?'active':''}" onclick="setMode('${m}')">${modeLabels[m]}</button>`).join("");
+}
+async function setMode(m){
+  await fetch(api("/simulator/config"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:m})});
+  document.getElementById("demoOut").textContent = "Simulator set to " + m + ".";
+  refresh();
+}
+async function sendN(n){
+  document.getElementById("demoOut").textContent = "Sending " + n + " requests to /proxy/weather ...";
+  let ok=0, fail=0, cached=0;
+  const jobs = [];
+  for(let i=0;i<n;i++){
+    jobs.push(fetch(api("/proxy/weather?city=bangalore&i="+i)).then(async r=>{
+      if(r.headers.get("X-Cache")==="HIT") cached++;
+      if(r.ok) ok++; else fail++;
+    }).catch(()=>fail++));
+    if(i%10===9) await Promise.all(jobs.splice(0));
+  }
+  await Promise.all(jobs);
+  document.getElementById("demoOut").textContent = "Done: " + ok + " ok, " + fail + " failed, " + cached + " cache hits of " + n + ". See charts and logs.";
+  refresh();
+}
+async function runDemo(){
+  await setMode("ERROR_500");
+  await sendN(20);
+  document.getElementById("demoOut").textContent += " Now set Normal, wait 10s, send 1 request to close the circuit.";
+}
+async function createRoute(){
+  const id = document.getElementById("newId").value.trim();
+  const path = document.getElementById("newPath").value.trim() || ("/"+id);
+  if(!id) return alert("Enter a route id");
+  await fetch(api("/routes"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,path,cacheTtlSec:60,rateLimitPerMin:100})});
+  document.getElementById("newId").value=""; document.getElementById("newPath").value="";
+  refresh();
+}
+async function resetAll(){ await fetch(api("/admin/reset"),{method:"POST"}); refresh(); }
+paintModes(); refresh(); setInterval(refresh, 2000);
+/* Hide hero video slot when no video file is present yet */
+(async () => {
+  const v = document.querySelector("video.bg");
+  if (!v) return;
+  for (const f of ["hero-bg.webm", "hero-bg.mp4"]) {
+    try { const r = await fetch(api("/" + f), {method: "HEAD"}); if (r.ok) return; } catch(e){}
+  }
+  v.style.display = "none";
+})();
+</script>
+</body>
+</html>
